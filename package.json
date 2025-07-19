@@ -11,9 +11,14 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@rocketseat/eslint-config": "^2.2.2",
     "@types/aws-lambda": "^8.10.152",
     "@types/node": "^24.0.15",
+    "eslint": "^8.57.1",
     "serverless-offline": "^14.4.0",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "zod": "^4.0.5"
   }
 }

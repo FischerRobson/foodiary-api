@@ -1,5 +1,5 @@
 import { APIGatewayProxyEventV2 } from 'aws-lambda'
-import { HttpRequest } from '../types/http';
+import { HttpRequest } from '../types/http'
 
 export function parseEvent(event: APIGatewayProxyEventV2): HttpRequest {
   const body = JSON.parse(event.body ?? '{}')
@@ -9,6 +9,6 @@ export function parseEvent(event: APIGatewayProxyEventV2): HttpRequest {
   return {
     body,
     params,
-    queryParams
+    queryParams,
   }
 }

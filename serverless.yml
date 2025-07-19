@@ -11,6 +11,7 @@ provider:
   architecture: arm64
   environment:
     DATABASE_URL: ${env:DATABASE_URL}
+    JWT_SECRET: ${env:JWT_SECRET}
 
 package: 
   individually: true
@@ -34,3 +35,31 @@ functions:
       - httpApi:
           path: /signup
           method: post
+  
+  me:
+    handler: src/lambdas/me.handler
+    events:
+      - httpApi:
+          path: /me
+          method: get
+  
+  createMeal:
+    handler: src/lambdas/createMeal.handler
+    events:
+      - httpApi:
+          path: /meals
+          method: post
+
+  listMeal:
+    handler: src/lambdas/listMeal.handler
+    events:
+      - httpApi:
+          path: /meals
+          method: get
+
+  getMealById:
+    handler: src/lambdas/getMealById.handler
+    events:
+      - httpApi:
+          path: /meals/{mealId}
+          method: get

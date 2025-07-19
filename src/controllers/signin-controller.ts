@@ -5,6 +5,7 @@ import { db } from '../db'
 import { usersTable } from '../db/schema'
 import { eq } from 'drizzle-orm'
 import { compare } from 'bcryptjs'
+import { signAccessTokenFor } from '../lib/jwt'
 
 const schema = z.object({
   email: z.email(),
@@ -31,8 +32,11 @@ export class SignInController {
     if (!user) return unauthorized({ error: 'Invalid credentials' })
 
     const isPasswordValid = await compare(data.password, user.password)
+
     if (!isPasswordValid) return unauthorized({ error: 'Invalid credentials' })
 
-    return ok({ user })
+    const jwt = signAccessTokenFor(user.id)
+
+    return ok({ jwt })
   }
 }

@@ -4,7 +4,7 @@
 
 
 **Obs**
-For some reason, its not working local, due to: 
+For some reason, its not working (PUT on S3 via presign URL) local, due to: 
 ```
 <Error>
 	<Code>InvalidAccessKeyId</Code>
@@ -14,6 +14,7 @@ For some reason, its not working local, due to:
 	<HostId>???</HostId>
 </Error>
 ```
+
 ---
 
 ## 🧰 Tech Stack

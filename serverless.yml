@@ -13,14 +13,19 @@ provider:
     DATABASE_URL: ${env:DATABASE_URL}
     JWT_SECRET: ${env:JWT_SECRET}
     BUCKET_NAME: !Ref UploadsBucket
+    MEALS_QUEUE_URL: !Ref MealsQueue
   iam:
     role:
       statements:
-        - Effect: "Allow"
-          Action:  
-            s3:PutObject
-          # Resource: !GetATT UploadsBucket.Arn
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:PutObjectAcl
           Resource: !Sub '${UploadsBucket.Arn}/*'
+        - Effect: Allow
+          Action: sqs:SendMessage
+          Resource: !GetAtt MealsDLQ.Arn
 
 
 package: 
@@ -74,10 +79,41 @@ functions:
           path: /meals/{mealId}
           method: get
 
+  fileUploadedEvent:
+    handler: src/lambdas/fileUploadedEvent.handler
+    events:
+      - s3:
+          bucket: !Ref UploadsBucket
+          event: s3:ObjectCreated:*
+          existing: true
+          # forceDeploy: true
+  
+  processMeal:
+    handler: src/lambdas/processMeal.handler
+    events:
+      - sqs:
+         arn: !GetAtt MealsQueue.Arn
+         batchSize: 1
+
 resources:
   Resources:
     UploadsBucket: 
       Type: AWS::S3::Bucket
       Properties:
         BucketName: uploads-bucket-foodiary
+    
+    MealsQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: meals-queue
+        VisibilityTimeout: 60
+        RedrivePolicy:
+          maxReceiveCount: 1
+          deadLetterTargetArn: !GetAtt MealsDLQ.Arn
+    
+    MealsDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: meals-queue-dlq
+
           

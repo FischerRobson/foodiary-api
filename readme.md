@@ -2,6 +2,18 @@
 
 **Foodiary** is a serverless food tracking service designed to help users log and monitor their daily meals. Built with modern cloud-native tools, it leverages the scalability and flexibility of serverless architecture combined with a type-safe development experience.
 
+
+**Obs**
+For some reason, its not working local, due to: 
+```
+<Error>
+	<Code>InvalidAccessKeyId</Code>
+	<Message>The AWS Access Key Id you provided does not exist in our records.</Message>
+	<AWSAccessKeyId>???</AWSAccessKeyId>
+	<RequestId>???</RequestId>
+	<HostId>???</HostId>
+</Error>
+```
 ---
 
 ## 🧰 Tech Stack

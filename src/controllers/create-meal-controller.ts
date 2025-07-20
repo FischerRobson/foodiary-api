@@ -1,20 +1,25 @@
-import { db } from '../db'
-import { HttpResponse, ProtectedHttpRequest } from '../types/http'
-import { badRequest, ok } from '../utils/http'
-import { mealsTable } from '../db/schema'
-import z from 'zod'
 import { PutObjectCommand } from '@aws-sdk/client-s3'
-import { randomUUID } from 'node:crypto'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { randomUUID } from 'crypto'
+import z from 'zod'
+
 import { s3Client } from '../clients/s3Client'
+import { db } from '../db'
+import { mealsTable } from '../db/schema'
+
+import { badRequest, created } from '../utils/http'
+import { HttpResponse, ProtectedHttpRequest } from '../types/http'
 
 const schema = z.object({
   fileType: z.enum(['audio/m4a', 'image/jpeg']),
 })
 
 export class CreateMealController {
-  static async handle(request: ProtectedHttpRequest): Promise<HttpResponse> {
-    const { success, error, data } = schema.safeParse(request.body)
+  static async handle({
+    userId,
+    body,
+  }: ProtectedHttpRequest): Promise<HttpResponse> {
+    const { success, error, data } = schema.safeParse(body)
 
     if (!success) {
       return badRequest({ errors: error.issues })
@@ -27,26 +32,28 @@ export class CreateMealController {
     const command = new PutObjectCommand({
       Bucket: process.env.BUCKET_NAME,
       Key: fileKey,
-      ContentType: data.fileType,
     })
 
-    const presignedURL = await getSignedUrl(s3Client, command)
-
-    const { userId } = request
+    const presignedURL = await getSignedUrl(s3Client, command, {
+      expiresIn: 600,
+    })
 
     const [meal] = await db
       .insert(mealsTable)
       .values({
         userId,
-        icon: '',
-        inputFileKey: 'input_file_key',
+        inputFileKey: fileKey,
         inputType: data.fileType === 'audio/m4a' ? 'audio' : 'picture',
         status: 'uploading',
+        icon: '',
         name: '',
         foods: [],
       })
       .returning({ id: mealsTable.id })
 
-    return ok({ mealId: meal.id, uploadURL: presignedURL })
+    return created({
+      mealId: meal.id,
+      uploadURL: presignedURL,
+    })
   }
 }
